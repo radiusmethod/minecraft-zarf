@@ -1,0 +1,33 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: GitRepository
+metadata:
+  name: minecraft
+  namespace: flux-system
+spec:
+  interval: 30s
+  ref:
+    tag: minecraft-4.9.1
+  # Currently the Zarf Agent can only mutate urls that are proper URIs (i.e. scheme://host/repo)
+  url: https://github.com/itzg/minecraft-server-charts.git
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: minecraft
+  namespace: minecraft
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./charts/minecraft
+      version: 'minecraft-'
+      sourceRef:
+        kind: GitRepository
+        name: minecraft
+        namespace: flux-system
+      interval: 1m
+  values:
+    replicaCount: 1
+    minecraftServer:
+      eula: "TRUE"
